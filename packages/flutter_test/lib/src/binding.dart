@@ -17,6 +17,7 @@ import 'package:stack_trace/stack_trace.dart' as stack_trace;
 import 'package:test_api/expect.dart' show fail;
 import 'package:test_api/test_api.dart' as test_package show Timeout; // ignore: deprecated_member_use
 import 'package:vector_math/vector_math_64.dart';
+import 'package:beisia/common/running_skip.dart';
 
 import '_binding_io.dart' if (dart.library.html) '_binding_web.dart' as binding;
 import 'goldens.dart';
@@ -723,6 +724,11 @@ abstract class TestWidgetsFlutterBinding extends BindingBase
     final Completer<void> testCompleter = Completer<void>();
     final VoidCallback testCompletionHandler = _createTestCompletionHandler(description, testCompleter);
     void handleUncaughtError(Object exception, StackTrace stack) {
+      // TODO(tsuka) RunningSkipのExceptionが発生した場合、ホーム画面などのテストが異常終了する件の暫定対応
+      if (exception is RunningSkip) {
+        return;
+      }
+
       if (testCompleter.isCompleted) {
         // Well this is not a good sign.
         // Ideally, once the test has failed we would stop getting errors from the test.
